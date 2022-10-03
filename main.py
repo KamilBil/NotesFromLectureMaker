@@ -14,9 +14,9 @@ from PyQt5.QtWidgets import QHBoxLayout, QPushButton, QLineEdit, QVBoxLayout, QL
 class NotesFromLectureMaker:
     def __init__(self):
         app = QtWidgets.QApplication(sys.argv)
-        window = QtWidgets.QWidget()
-        window.setWindowTitle("NotesFromLectureMaker")
-        window.setFixedSize(500, 150)
+        self._window = QtWidgets.QWidget()
+        self._window.setWindowTitle("NotesFromLectureMaker")
+        self._window.setFixedSize(500, 150)
         layout = QVBoxLayout()
 
         # Input file
@@ -39,13 +39,24 @@ class NotesFromLectureMaker:
         layout.addLayout(output_file_row)
         btn_start = QPushButton("Start")
         layout.addWidget(btn_start)
-        window.setLayout(layout)
+        self._window.setLayout(layout)
 
-        # TODO: QFileDialog
+        btn_select_input_file.clicked.connect(self.set_input_path)
+        btn_select_output_file.clicked.connect(self.set_output_path)
         btn_start.clicked.connect(self.preprocess)
-
-        window.show()
+        self._window.show()
         sys.exit(app.exec_())
+
+    def set_input_path(self):
+        filename = QFileDialog.getOpenFileName(self._window, "Choose video", "",
+                                               "Video Files (*.mp4 *.avi *.mkv *.mov *.flv);;")
+        if filename[0]:
+            self._input_path_line_edit.setText(filename[0])
+
+    def set_output_path(self):
+        filename = QFileDialog.getSaveFileName(self._window, "Create PDF", "", "Video Files (*.pdf);;")
+        if filename[0]:
+            self._pdf_path_line_edit.setText(filename[0])
 
     def preprocess(self):
         self.prepare_frames(self._input_path_line_edit.text(), 60 * 15)
@@ -54,7 +65,6 @@ class NotesFromLectureMaker:
         self.create_pdf(self._pdf_path_line_edit.text())
 
     def prepare_frames(self, video_path, frames_step=3600):
-        print('video path: ', video_path)
         vidcap = cv2.VideoCapture(video_path)
         success, image = vidcap.read()
         count = 0
@@ -97,7 +107,6 @@ class NotesFromLectureMaker:
 
     @staticmethod
     def create_pdf(output_path: str):
-        print('output: ', output_path)
         images = [
             Image.open("output/" + f)
             for f in [f for f in listdir('output') if isfile(join('output', f))]
