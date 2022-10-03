@@ -8,7 +8,8 @@ from PIL import Image
 import numpy as np
 import sys
 from PyQt5 import QtWidgets
-from PyQt5.QtWidgets import QHBoxLayout, QPushButton, QLineEdit, QVBoxLayout, QLabel, QFileDialog
+from PyQt5.QtWidgets import QHBoxLayout, QPushButton, QLineEdit, QVBoxLayout, QLabel, QFileDialog, QApplication, \
+    QProgressBar
 
 
 class NotesFromLectureMaker:
@@ -39,6 +40,8 @@ class NotesFromLectureMaker:
         layout.addLayout(output_file_row)
         btn_start = QPushButton("Start")
         layout.addWidget(btn_start)
+        self._progress_bar = QProgressBar()
+        layout.addWidget(self._progress_bar)
         self._window.setLayout(layout)
 
         btn_select_input_file.clicked.connect(self.set_input_path)
@@ -66,6 +69,7 @@ class NotesFromLectureMaker:
 
     def prepare_frames(self, video_path, frames_step=3600):
         vidcap = cv2.VideoCapture(video_path)
+        self._progress_bar.setMaximum(int(vidcap.get(cv2.CAP_PROP_FRAME_COUNT)))
         success, image = vidcap.read()
         count = 0
         try:
@@ -74,9 +78,11 @@ class NotesFromLectureMaker:
             print('File already exists!')
 
         while success:
+            QApplication.processEvents()
             cv2.imwrite("temp/frame%d.jpg" % count, image)
             success, image = vidcap.read()
             count += frames_step
+            self._progress_bar.setValue(count)
             vidcap.set(cv2.CAP_PROP_POS_FRAMES, count)
 
     def remove_duplicates(self, trigger_value):
