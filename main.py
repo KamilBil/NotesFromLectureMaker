@@ -66,6 +66,7 @@ class NotesFromLectureMaker:
         self.remove_duplicates(2)
         shutil.rmtree('temp')
         self.create_pdf(self._pdf_path_line_edit.text())
+        self._progress_bar.setValue(0)
 
     def prepare_frames(self, video_path, frames_step=3600):
         vidcap = cv2.VideoCapture(video_path)
