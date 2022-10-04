@@ -100,7 +100,7 @@ class NotesFromLectureMaker:
 
         start_img = cv2.imread('temp/' + onlyfiles[0], 0)
         if cv2.countNonZero(start_img) != 0:
-            cv2.imwrite("output/" + onlyfiles[0], start_img)
+            cv2.imwrite("output/" + onlyfiles[0], cv2.imread('temp/' + onlyfiles[0]))
         for i in range(0, len(onlyfiles) - 1):
             img1 = cv2.imread('temp/' + onlyfiles[i], 0)
             img2 = cv2.imread('temp/' + onlyfiles[i + 1], 0)
