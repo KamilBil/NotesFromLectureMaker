@@ -63,7 +63,7 @@ class NotesFromLectureMaker:
 
     def preprocess(self):
         self.prepare_frames(self._input_path_line_edit.text(), 60 * 15)
-        self.remove_duplicates(2)
+        self.remove_duplicates(3)
         shutil.rmtree('temp')
         self.create_pdf(self._pdf_path_line_edit.text())
         self._progress_bar.setValue(0)
@@ -110,7 +110,7 @@ class NotesFromLectureMaker:
             percentage = (np.count_nonzero(res) * 100) / res.size
 
             if percentage > trigger_value and cv2.countNonZero(img2) != 0:
-                cv2.imwrite("output/" + onlyfiles[i + 1], img2)
+                cv2.imwrite("output/" + onlyfiles[i + 1], cv2.imread('temp/' + onlyfiles[i + 1]))
 
     @staticmethod
     def create_pdf(output_path: str):
