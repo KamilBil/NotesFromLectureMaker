@@ -91,7 +91,6 @@ class NotesFromLectureMaker:
         if not onlyfiles:
             return
         onlyfiles = sorted(onlyfiles, key=lambda x: int(re.sub("[^0-9]", "", x)))
-
         try:
             os.mkdir("output")
         except:
@@ -114,10 +113,11 @@ class NotesFromLectureMaker:
 
     @staticmethod
     def create_pdf(output_path: str):
-        images = [
-            Image.open("output/" + f)
-            for f in [f for f in listdir('output') if isfile(join('output', f))]
-        ]
+        onlyfiles = [f for f in listdir('output') if isfile(join('output', f))]
+        if not onlyfiles:
+            return
+        onlyfiles = sorted(onlyfiles, key=lambda x: int(re.sub("[^0-9]", "", x)))
+        images = [Image.open("output/" + f) for f in onlyfiles]
         images[0].save(
             output_path, "PDF", resolution=100.0, save_all=True, append_images=images[1:]
         )
