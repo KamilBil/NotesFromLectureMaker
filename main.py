@@ -38,15 +38,15 @@ class NotesFromLectureMaker:
 
         layout.addLayout(input_file_row)
         layout.addLayout(output_file_row)
-        btn_start = QPushButton("Start")
-        layout.addWidget(btn_start)
+        btn_generate_pdf = QPushButton("Generate PDF")
+        layout.addWidget(btn_generate_pdf)
         self._progress_bar = QProgressBar()
         layout.addWidget(self._progress_bar)
         self._window.setLayout(layout)
 
         btn_select_input_file.clicked.connect(self.set_input_path)
         btn_select_output_file.clicked.connect(self.set_output_path)
-        btn_start.clicked.connect(self.preprocess)
+        btn_generate_pdf.clicked.connect(self.preprocess)
         self._window.show()
         sys.exit(app.exec_())
 
