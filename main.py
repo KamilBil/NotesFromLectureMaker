@@ -8,8 +8,22 @@ from PIL import Image
 import numpy as np
 import sys
 from PyQt5 import QtWidgets
-from PyQt5.QtWidgets import QHBoxLayout, QPushButton, QLineEdit, QVBoxLayout, QLabel, QFileDialog, QApplication, \
-    QProgressBar
+from PyQt5.QtCore import QRunnable, pyqtSlot, QThreadPool
+from PyQt5.QtWidgets import QHBoxLayout, QPushButton, QLineEdit, QVBoxLayout, QLabel, QFileDialog, QProgressBar
+
+
+class Worker(QRunnable):
+    def __init__(self, obj):
+        super().__init__()
+        self._obj = obj
+
+    @pyqtSlot()
+    def run(self):
+        self._obj.prepare_frames(self._obj.input_path_line_edit.text(), 60 * 15)
+        self._obj.remove_duplicates(3)
+        shutil.rmtree('temp')
+        self._obj.create_pdf(self._obj.pdf_path_line_edit.text())
+        self._obj.progress_bar.setValue(0)
 
 
 class NotesFromLectureMaker:
@@ -46,7 +60,9 @@ class NotesFromLectureMaker:
 
         btn_select_input_file.clicked.connect(self.set_input_path)
         btn_select_output_file.clicked.connect(self.set_output_path)
-        btn_generate_pdf.clicked.connect(self.preprocess)
+        self.threadpool = QThreadPool()
+        worker = Worker(self)
+        btn_generate_pdf.clicked.connect(lambda: self.threadpool.start(worker))
         self._window.show()
         sys.exit(app.exec_())
 
@@ -61,13 +77,6 @@ class NotesFromLectureMaker:
         if filename[0]:
             self._pdf_path_line_edit.setText(filename[0])
 
-    def preprocess(self):
-        self.prepare_frames(self._input_path_line_edit.text(), 60 * 15)
-        self.remove_duplicates(3)
-        shutil.rmtree('temp')
-        self.create_pdf(self._pdf_path_line_edit.text())
-        self._progress_bar.setValue(0)
-
     def prepare_frames(self, video_path, frames_step=3600):
         vidcap = cv2.VideoCapture(video_path)
         self._progress_bar.setMaximum(int(vidcap.get(cv2.CAP_PROP_FRAME_COUNT)))
@@ -79,7 +88,6 @@ class NotesFromLectureMaker:
             print('File already exists!')
 
         while success:
-            QApplication.processEvents()
             cv2.imwrite("temp/frame%d.jpg" % count, image)
             success, image = vidcap.read()
             count += frames_step
@@ -121,6 +129,18 @@ class NotesFromLectureMaker:
         images[0].save(
             output_path, "PDF", resolution=100.0, save_all=True, append_images=images[1:]
         )
+
+    @property
+    def input_path_line_edit(self):
+        return self._input_path_line_edit
+
+    @property
+    def pdf_path_line_edit(self):
+        return self._pdf_path_line_edit
+
+    @property
+    def progress_bar(self):
+        return self._progress_bar
 
 
 NotesFromLectureMaker()
