@@ -10,6 +10,7 @@ import sys
 from PyQt5 import QtWidgets
 from PyQt5.QtCore import QRunnable, pyqtSlot, QThreadPool
 from PyQt5.QtWidgets import QHBoxLayout, QPushButton, QLineEdit, QVBoxLayout, QLabel, QFileDialog, QProgressBar
+import pytesseract
 
 
 class Worker(QRunnable):
@@ -22,12 +23,14 @@ class Worker(QRunnable):
         self._obj.prepare_frames(self._obj.input_path_line_edit.text(), 60 * 15)
         self._obj.remove_duplicates(3)
         shutil.rmtree('temp')
+        self._obj.generate_txt()
         self._obj.create_pdf(self._obj.pdf_path_line_edit.text())
         self._obj.progress_bar.setValue(0)
 
 
 class NotesFromLectureMaker:
     def __init__(self):
+        pytesseract.pytesseract.tesseract_cmd = r'C:\Program Files\Tesseract\tesseract.exe'
         app = QtWidgets.QApplication(sys.argv)
         self._window = QtWidgets.QWidget()
         self._window.setWindowTitle("NotesFromLectureMaker")
@@ -129,6 +132,14 @@ class NotesFromLectureMaker:
         images[0].save(
             output_path, "PDF", resolution=100.0, save_all=True, append_images=images[1:]
         )
+
+    @staticmethod
+    def generate_txt():
+        onlyfiles = ["output/"+f for f in listdir('output') if isfile(join('output', f))]
+        print(onlyfiles)
+        for file in onlyfiles:
+            img = cv2.imread(file)
+            print(pytesseract.image_to_string(img))
 
     @property
     def input_path_line_edit(self):
